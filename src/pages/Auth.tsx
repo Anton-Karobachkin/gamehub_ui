@@ -2,11 +2,14 @@ import { useState, useContext, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { HOME_ROUTE, LOGIN_ROUTE } from '../utils/consts';
+import { HOME_ROUTE, AUTH_ROUTE } from '../utils/consts';
 import { Context } from '../main';
 import { observer } from 'mobx-react-lite';
+import API from '../api/API';
 
 let Auth = observer(() => {
+
+    const [isLogin, setIsLogin] = useState(true);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -14,8 +17,6 @@ let Auth = observer(() => {
     const { user } = useContext(Context);
 
     // if (user.isAuth) navigate(HOME_ROUTE);
-
-    const isLogin = location.pathname === LOGIN_ROUTE;
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -31,28 +32,31 @@ let Auth = observer(() => {
     }
 
     const _onLogin = async (evt) => {
-        try {
-            let response = await fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password })
-            });
-            let userData = await response.json();
-            console.log(userData);
-            if (Object.keys(userData).length) {
+        const response = new API().loginUser({ email, password });
+        response.then(res => {
+            if (res.statusCode === 0) {
+                localStorage.setItem("gamehubtoken", res.token);
                 user.setIsAuth(true);
-                localStorage.setItem("gamehubtoken", userData.token);
+            } else {
+                console.log(res);
             }
-        } catch (err) {
-            console.log(err);
-        }
+        });
     }
 
     const _onRegister = (evt) => {
-        console.log('register')
+        const response = new API().registerUser({ email, password });
+        response.then(res => {
+            if (res.statusCode === 0) {
+                localStorage.setItem("gamehubtoken", res.token);
+                user.setIsAuth(true);
+            } else {
+                console.log(res);
+            }
+        });
+    }
+
+    const _onSwitch = (evt) => {
+        setIsLogin(prev => !prev);
     }
 
     return (
@@ -76,6 +80,9 @@ let Auth = observer(() => {
                         Register
                     </Button>
             }
+            <Button variant="primary" onClick={_onSwitch}>
+                Switch
+            </Button>
         </Form>
     );
 });
