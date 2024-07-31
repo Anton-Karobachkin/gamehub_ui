@@ -4,7 +4,7 @@ import { Spinner } from 'react-bootstrap';
 import { Context } from './main';
 import AppRouter from './components/AppRouter';
 import API from './api/API';
-import './App.css'
+import './App.css';
 
 function App() {
   const { user } = useContext(Context);
@@ -21,9 +21,11 @@ function App() {
     return <Spinner animation={'grow'} />
   }
   return (
+
     <BrowserRouter>
       <AppRouter />
     </BrowserRouter>
+
   )
 }
 
